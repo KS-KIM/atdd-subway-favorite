@@ -2,15 +2,13 @@ package wooteco.subway;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import io.restassured.authentication.FormAuthConfig;
+import wooteco.subway.service.member.dto.LoginRequest;
 import wooteco.subway.service.member.dto.MemberResponse;
 import wooteco.subway.service.member.dto.TokenResponse;
 
@@ -69,29 +67,33 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     public MemberResponse myInfoWithSession(String email, String password) {
         return
             given()
-                .auth()
-                .form(email, password, new FormAuthConfig("/login", "email", "password"))
+                    .auth()
+                    .form(email, password, new FormAuthConfig("/login", "email", "password"))
             .when()
-                .get("/me/session")
+                    .get("/me/session")
             .then()
-                .log().all()
-                .statusCode(HttpStatus.OK.value())
-                .extract().as(MemberResponse.class);
+                    .log().all()
+                    .statusCode(HttpStatus.OK.value())
+                    .extract().as(MemberResponse.class);
     }
 
     public MemberResponse myInfoWithBearerAuth(TokenResponse tokenResponse) {
-        // TODO: oauth2 auth(bearer)를 활용하여 /me/bearer 요청하여 내 정보 조회
-        return null;
+        return
+                given()
+                        .auth()
+                        .oauth2(tokenResponse.getAccessToken())
+                .when()
+                        .get("/me/bearer")
+                .then()
+                        .log().all()
+                        .statusCode(HttpStatus.OK.value())
+                        .extract().as(MemberResponse.class);
     }
 
     public TokenResponse login(String email, String password) {
-        Map<String, String> params = new HashMap<>();
-        params.put("email", email);
-        params.put("password", password);
-
         return
                 given().
-                        body(params).
+                        body(new LoginRequest(TEST_USER_EMAIL, TEST_USER_PASSWORD)).
                         contentType(MediaType.APPLICATION_JSON_VALUE).
                         accept(MediaType.APPLICATION_JSON_VALUE).
                 when().
