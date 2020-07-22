@@ -14,16 +14,24 @@ import org.springframework.data.relational.core.mapping.Embedded;
 public class Line {
     @Id
     private Long id;
+
     private String name;
+
     private LocalTime startTime;
+
     private LocalTime endTime;
+
     private int intervalTime;
+
     @CreatedDate
     private LocalDateTime createdAt;
+
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
     @Column("bg_color")
     private String backgroundColor;
+
     @Embedded.Empty
     private LineStations stations = LineStations.empty();
 
